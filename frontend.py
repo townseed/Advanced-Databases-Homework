@@ -5,7 +5,7 @@ def addBook(Title, Author, ISBN, Pages):
     print(backAddBook(Title, Author, int(ISBN), int(Pages)))
 
 def deleteBook(ISBN):
-    print(backAddBook(int(ISBN)))
+    print(backDeleteBook(int(ISBN)))
 
 def editTitle(ISBN, newTitle):
     print(backEditTitle(int(ISBN), newTitle))
@@ -53,12 +53,12 @@ def getCheckedOutBooks(Username):
     print(backGetCheckedOutBooks(Username))
 
 while(1):
-    command = input()
+    command = input("Lib: ")
     if(command != ""):
         parsedCommand = command.split()
         if(parsedCommand[0].lower() == "addbook"):
             addBook(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4])
-        elif(parsedCommand[0].lower() == "deletebook" || parsedCommand[0].lower() == "removebook"):
+        elif(parsedCommand[0].lower() == "deletebook" or parsedCommand[0].lower() == "removebook"):
             deleteBook(parsedCommand[1])
         elif(parsedCommand[0].lower() == "edittitle"):
             edittitle(parsedCommand[1], parsedCommand[2])
@@ -68,34 +68,36 @@ while(1):
             editISBN(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editpages"):
             editPages(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "searchbytitle" || parsedCommand[0].lower() == "findbooktitle"):
-            if(sizeof(parsedCommand) > 2)
+        elif(parsedCommand[0].lower() == "searchbytitle" or parsedCommand[0].lower() == "findbooktitle"):
+            if(len(parsedCommand) > 2):
                 searchByTitle(parsedCommand[1], parsedCommand[2])
-            else searchByTitle(parsedCommand[1])
+            else: searchByTitle(parsedCommand[1])
         elif(parsedCommand[0].lower() == "searchbyauthor"):
-            if(sizeof(parsedCommand) > 2)
+            if(len(parsedCommand) > 2):
                 searchByAuthor(parsedCommand[1], parsedCommand[2])
-            else searchByAuthor(parsedCommand[1])
+            else: searchByAuthor(parsedCommand[1])
         elif(parsedCommand[0].lower() == "searchbyisbn"):
-            if(sizeof(parsedCommand) > 2)
+            if(len(parsedCommand) > 2):
                 searchByISBN(parsedCommand[1], parsedCommand[2])
-            else searchByISBN(parsedCommand[1])
+            else: searchByISBN(parsedCommand[1])
         elif(parsedCommand[0].lower() == "addborrower"):
-            if(sizeof(parsedCommand) > 3)
+            if(len(parsedCommand) > 3):
                 searchByTitle(parsedCommand[1], parsedCommand[2], parsedCommand[3])
-            else searchByTitle(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "deleteborrower" || parsedCommand[0].lower() == "removeborrower"):
+            else: searchByTitle(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "deleteborrower" or parsedCommand[0].lower() == "removeborrower"):
             deleteBorrower(parsedCommand[1])
-        elif(parsedCommand[0].lower() == "editname" || parsedCommand[0].lower() == "changename"):
+        elif(parsedCommand[0].lower() == "editname" or parsedCommand[0].lower() == "changename"):
             editName(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "editusername" || parsedCommand[0].lower() == "changeusername"):
+        elif(parsedCommand[0].lower() == "editusername" or parsedCommand[0].lower() == "changeusername"):
             editUsername(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "editphone" || parsedCommand[0].lower() == "changephone"):
+        elif(parsedCommand[0].lower() == "editphone" or parsedCommand[0].lower() == "changephone"):
             editPhone(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "checkoutbook" || parsedCommand[0] == "checkout"):
+        elif(parsedCommand[0].lower() == "checkoutbook" or parsedCommand[0] == "checkout"):
             checkoutbook(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "returnbook" || parsedCommand[0].lower() == "return"):
+        elif(parsedCommand[0].lower() == "returnbook" or parsedCommand[0].lower() == "return"):
             returnBook(parsedCommand[1], parsedCommand[2])
-        elif(parsedCommand[0].lower() == "getcheckedoutbooks" || parsedCommand[0].lower() == "books"):
+        elif(parsedCommand[0].lower() == "getcheckedoutbooks" or parsedCommand[0].lower() == "books"):
             getCheckedOutBooks(parsedCommand[1])
-        else print("Unrecognized command")
+        elif(parsedCommand[0].lower() == "exit" or parsedCommand[0].lower() == "quit"):
+            break
+        else: print("Unrecognized command")
