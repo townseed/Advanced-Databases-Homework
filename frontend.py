@@ -26,7 +26,7 @@ def searchByAuthor(Author, sortby = "Author"):
     print(backSearchByAuthor(Author, sortby))
 
 def searchByISBN(ISBN, sortby = "Author"):
-    print(backSearchByISBN(int(ISBN), sortby))
+    print(backSearchByISBN(ISBN, sortby))
 
 def addBorrower(Name, Username, Phone = "0000000000"):
     print(backAddBorrower(Name, Username, int(Phone)))
@@ -56,12 +56,13 @@ while(1):
     command = input("Lib: ")
     if(command != ""):
         parsedCommand = command.split()
+        print("executing command: " + str(parsedCommand))
         if(parsedCommand[0].lower() == "addbook"):
             addBook(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4])
         elif(parsedCommand[0].lower() == "deletebook" or parsedCommand[0].lower() == "removebook"):
             deleteBook(parsedCommand[1])
         elif(parsedCommand[0].lower() == "edittitle"):
-            edittitle(parsedCommand[1], parsedCommand[2])
+            editTitle(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editauthor"):
             editAuthor(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editisbn"):
@@ -69,14 +70,14 @@ while(1):
         elif(parsedCommand[0].lower() == "editpages"):
             editPages(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "searchbytitle" or parsedCommand[0].lower() == "findbooktitle"):
-            if(len(parsedCommand) > 2):
+            if(len(parsedCommand) > 3):
                 searchByTitle(parsedCommand[1], parsedCommand[2])
-            else: searchByTitle(parsedCommand[1])
+            else: searchByTitle(parsedCommand[1], "Author")
         elif(parsedCommand[0].lower() == "searchbyauthor"):
             if(len(parsedCommand) > 2):
                 searchByAuthor(parsedCommand[1], parsedCommand[2])
             else: searchByAuthor(parsedCommand[1])
-        elif(parsedCommand[0].lower() == "searchbyisbn"):
+        elif(parsedCommand[0].lower() == "searchbyisbn" or parsedCommand[0].lower() == "getbook"):
             if(len(parsedCommand) > 2):
                 searchByISBN(parsedCommand[1], parsedCommand[2])
             else: searchByISBN(parsedCommand[1])
