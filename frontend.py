@@ -1,58 +1,101 @@
-import redisbackend.py
+from redisbackend import *
 import sys
 
 def addBook(Title, Author, ISBN, Pages):
-    # TODO: add books :)
+    print(backAddBook(Title, Author, int(ISBN), int(Pages)))
 
-def deleteBook(Title):
-    #TODO: remove book
+def deleteBook(ISBN):
+    print(backAddBook(int(ISBN)))
 
-def editTitle(oldTitle, newTitle):
-    #TODO: edit title
+def editTitle(ISBN, newTitle):
+    print(backEditTitle(int(ISBN), newTitle))
 
-def editAuthor(Title, newAuthor):
-    #TODO: this
+def editAuthor(ISBN, newAuthor):
+    print(backEditAuthor(int(ISBN), newAuthor))
 
-def editISBN(Title, newISBN):
-    #TODO: this
+def editISBN(oldISBN, newISBN):
+    print(backEditISBN(int(oldISBN), int(newISBN)))
 
-def editPages(Title, newPageCount):
-    #TODO: this
+def editPages(ISBN, newPageCount):
+    print(backEditPages(int(ISBN), int(newPageCount)))
 
-def searchByTitle(Title, sortby = Author):
-    #TODO: this
+def searchByTitle(Title, sortby = "Author"):
+    print(backSearchByTitle(Title, sortby))
 
-def searchByAuthor(Author, sortby = Author):
-    #TODO: this
+def searchByAuthor(Author, sortby = "Author"):
+    print(backSearchByAuthor(Author, sortby))
 
-def searchByISBN(ISBN, sortby = Author):
-    #TODO: this
+def searchByISBN(ISBN, sortby = "Author"):
+    print(backSearchByISBN(int(ISBN), sortby))
 
-def addBorrower(Name, Username, Phone = 0000000000):
-    #TODO: this
+def addBorrower(Name, Username, Phone = "0000000000"):
+    print(backAddBorrower(Name, Username, int(Phone)))
 
 def deleteBorrower(Username):
-    #TODO: this
+    print(backDeleteBorrower(Username))
 
 def editName(Username, newName):
-    #TODO: this
+    print(backEditName(Username, newName))
 
 def editUsername(oldUsername, newUsername):
-    #TODO: this
+    print(backEditUsername(oldUsername, newUsername))
 
 def editPhone(Username, newPhone):
-    #TODO: this
+    print(backEditPhone(Username, int(newPhone)))
 
 def checkoutBook(Username, ISBN):
-    #TODO: this
+    print(backCheckoutBook(Username, int(ISBN)))
 
 def returnBook(Username, ISBN):
-    #TODO: this
+    print(backReturnBook(Username, int(ISBN)))
 
 def getCheckedOutBooks(Username):
-    #TODO: this
+    print(backGetCheckedOutBooks(Username))
 
 while(1):
     command = input()
     if(command != ""):
         parsedCommand = command.split()
+        if(parsedCommand[0].lower() == "addbook"):
+            addBook(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4])
+        elif(parsedCommand[0].lower() == "deletebook" || parsedCommand[0].lower() == "removebook"):
+            deleteBook(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "edittitle"):
+            edittitle(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "editauthor"):
+            editAuthor(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "editisbn"):
+            editISBN(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "editpages"):
+            editPages(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "searchbytitle" || parsedCommand[0].lower() == "findbooktitle"):
+            if(sizeof(parsedCommand) > 2)
+                searchByTitle(parsedCommand[1], parsedCommand[2])
+            else searchByTitle(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "searchbyauthor"):
+            if(sizeof(parsedCommand) > 2)
+                searchByAuthor(parsedCommand[1], parsedCommand[2])
+            else searchByAuthor(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "searchbyisbn"):
+            if(sizeof(parsedCommand) > 2)
+                searchByISBN(parsedCommand[1], parsedCommand[2])
+            else searchByISBN(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "addborrower"):
+            if(sizeof(parsedCommand) > 3)
+                searchByTitle(parsedCommand[1], parsedCommand[2], parsedCommand[3])
+            else searchByTitle(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "deleteborrower" || parsedCommand[0].lower() == "removeborrower"):
+            deleteBorrower(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "editname" || parsedCommand[0].lower() == "changename"):
+            editName(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "editusername" || parsedCommand[0].lower() == "changeusername"):
+            editUsername(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "editphone" || parsedCommand[0].lower() == "changephone"):
+            editPhone(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "checkoutbook" || parsedCommand[0] == "checkout"):
+            checkoutbook(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "returnbook" || parsedCommand[0].lower() == "return"):
+            returnBook(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "getcheckedoutbooks" || parsedCommand[0].lower() == "books"):
+            getCheckedOutBooks(parsedCommand[1])
+        else print("Unrecognized command")
