@@ -2,19 +2,22 @@ from redisbackend import *
 import sys
 
 def addBook(Title, Author, ISBN, Pages):
-    print(backAddBook(Title, Author, int(ISBN), int(Pages)))
+    print(backAddBook(Title, Author, ISBN, int(Pages)))
 
 def deleteBook(ISBN):
-    print(backDeleteBook(int(ISBN)))
+    print(backDeleteBook(ISBN))
 
 def editTitle(ISBN, newTitle):
-    print(backEditTitle(int(ISBN), newTitle))
+    print(backEditTitle(ISBN, newTitle))
 
 def editAuthor(ISBN, newAuthor):
-    print(backEditAuthor(int(ISBN), newAuthor))
+    print(backEditAuthor(ISBN, newAuthor))
+
+def addAuthor(ISBN, newAuthor):
+    print(backAddAuthor(ISBN, newAuthor))
 
 def editISBN(oldISBN, newISBN):
-    print(backEditISBN(int(oldISBN), int(newISBN)))
+    print(backEditISBN(oldISBN, newISBN))
 
 def editPages(ISBN, newPageCount):
     print(backEditPages(int(ISBN), int(newPageCount)))
@@ -44,19 +47,29 @@ def editPhone(Username, newPhone):
     print(backEditPhone(Username, int(newPhone)))
 
 def checkoutBook(Username, ISBN):
-    print(backCheckoutBook(Username, int(ISBN)))
+    print(backCheckoutBook(Username, ISBN))
 
 def returnBook(Username, ISBN):
-    print(backReturnBook(Username, int(ISBN)))
+    print(backReturnBook(Username, ISBN))
 
-def getCheckedOutBooks(Username):
-    print(backGetCheckedOutBooks(Username))
+def getCheckedOutBooks(Username, sortby = "Author"):
+    print(backGetCheckedOutBooks(Username, sortby))
+
+def searchByUsername(Username):
+    print(backSearchUname(Username))
+
+def searchByName(Name):
+    print(backSearchName(Name))
+
+def getUsersBorrowing(ISBN):
+    print(backGetUsersBorrowing(ISBN))
+
 
 while(1):
     command = input("Lib: ")
     if(command != ""):
         parsedCommand = command.split()
-        print("executing command: " + str(parsedCommand))
+        # print("executing command: " + str(parsedCommand))
         if(parsedCommand[0].lower() == "addbook"):
             addBook(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4])
         elif(parsedCommand[0].lower() == "deletebook" or parsedCommand[0].lower() == "removebook"):
@@ -65,12 +78,14 @@ while(1):
             editTitle(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editauthor"):
             editAuthor(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "addauthor"):
+            addAuthor(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editisbn"):
             editISBN(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editpages"):
             editPages(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "searchbytitle" or parsedCommand[0].lower() == "findbooktitle"):
-            if(len(parsedCommand) > 3):
+            if(len(parsedCommand) > 2):
                 searchByTitle(parsedCommand[1], parsedCommand[2])
             else: searchByTitle(parsedCommand[1], "Author")
         elif(parsedCommand[0].lower() == "searchbyauthor"):
@@ -83,8 +98,8 @@ while(1):
             else: searchByISBN(parsedCommand[1])
         elif(parsedCommand[0].lower() == "addborrower"):
             if(len(parsedCommand) > 3):
-                searchByTitle(parsedCommand[1], parsedCommand[2], parsedCommand[3])
-            else: searchByTitle(parsedCommand[1], parsedCommand[2])
+                addBorrower(parsedCommand[1], parsedCommand[2], parsedCommand[3])
+            else: addBorrower(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "deleteborrower" or parsedCommand[0].lower() == "removeborrower"):
             deleteBorrower(parsedCommand[1])
         elif(parsedCommand[0].lower() == "editname" or parsedCommand[0].lower() == "changename"):
@@ -94,11 +109,19 @@ while(1):
         elif(parsedCommand[0].lower() == "editphone" or parsedCommand[0].lower() == "changephone"):
             editPhone(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "checkoutbook" or parsedCommand[0] == "checkout"):
-            checkoutbook(parsedCommand[1], parsedCommand[2])
+            checkoutBook(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "returnbook" or parsedCommand[0].lower() == "return"):
             returnBook(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "getcheckedoutbooks" or parsedCommand[0].lower() == "books"):
-            getCheckedOutBooks(parsedCommand[1])
+            if(len(parsedCommand) > 2):
+                getCheckedOutBooks(parsedCommand[1], parsedCommand[2])
+            else: getCheckedOutBooks(parsedCommand[1])
         elif(parsedCommand[0].lower() == "exit" or parsedCommand[0].lower() == "quit"):
             break
+        elif(parsedCommand[0].lower() == "getuser" or parsedCommand[0] == "getuserbyusername" or parsedCommand[0] == "searchbyusername"):
+            searchByUsername(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "getuserbyname" or parsedCommand[0].lower() == "searchuserbyname"):
+            searchByName(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "getusersborrowing"):
+            getUsersBorrowing(parsedCommand[1])
         else: print("Unrecognized command")
