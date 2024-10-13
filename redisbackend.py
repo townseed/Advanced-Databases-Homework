@@ -13,8 +13,8 @@ def compareBookISBNs(item1, item2):
 def backSearchUname(Username):
     return r.hgetall(Username)
 
-def backAddBook(Title, Author, ISBN, Pages):
-    r.hset(ISBN, mapping={"Title": Title, "Author": Author, "Pages": Pages, "ISBN" : ISBN})
+def backAddBook(Title, Author, ISBN, Pages, copies):
+    r.hset(ISBN, mapping={"Title": Title, "Author": Author, "Pages": Pages, "ISBN" : ISBN, "Copies": copies, "CheckedOut": 0})
     r.sadd(Title, ISBN)
     r.sadd(Author, ISBN)
     return "book added"
@@ -24,12 +24,11 @@ def backAddAuthor(ISBN, Author):
     r.hset(ISBN, "Author", r.hget(ISBN, "Author") + ";" + Author)
     
 def backDeleteBook(ISBN):
-    r.srem(r.hget(ISBN, Title), ISBN)
-    r.srem(r.hget(ISBN, Author), ISBN)
+    if(r.exists(ISBN) == 0): return "Book does not exist"
+    if(int(r.hget(ISBN, "CheckedOut")) > 0): return "Return copies before removing book"
+    r.srem(r.hget(ISBN, "Title"), ISBN)
+    r.srem(r.hget(ISBN, "Author"), ISBN)
     r.delete(ISBN)
-    change = r.smembers(ISBN + ":checkedout")
-    for user in change:
-        r.srem(user + ":checkedout", ISBN)
     r.delete(ISBN + ":checkedout")
     return "removed"
 
@@ -48,14 +47,15 @@ def backEditAuthor(ISBN, newAuthor):
 def backEditISBN(oldISBN, newISBN):
     r.srem(r.hget(oldISBN, "Title"), oldISBN)
     r.srem(r.hget(oldISBN, "Author"), oldISBN)
-    r.sadd(Title, newISBN)
-    r.sadd(Author, newISBN)
+    r.sadd(r.hget(oldISBN, "Title"), newISBN)
+    r.sadd(r.hget(oldISBN, "Author"), newISBN)
     r.hset(oldISBN, "ISBN", newISBN)
     r.rename(oldISBN, newISBN)
-    change = r.smembers(newISBN + ":checkedout")
+    change = r.smembers(oldISBN + ":checkedout")
     for user in change:
         r.srem(user + ":checkedout", oldISBN)
         r.sadd(user + ":checkedout", newISBN)
+    r.rename(oldISBN + ":checkedout", newISBN + ":checkedout")
     return "updated ISBN"
 
 def backEditPages(ISBN, newPageCount):
@@ -95,11 +95,9 @@ def backAddBorrower(Name, Username, Phone):
     return "borrower added"
 
 def backDeleteBorrower(Username):
-    r.delete(Username + ":checkedout")
+    if(r.exists(Username) == 0): return "User does not exist"
+    if(int(r.hget(Username, "CheckedOut")) > 0): return "Return all books before deleting a user!"
     r.delete(Username)
-    change = r.smembers(Username + ":checkedout")
-    for book in change:
-        r.srem(book + ":checkedout", Username)
     r.delete(Username + ":checkedout")
     return "borrower deleted"
 
@@ -129,12 +127,16 @@ def backCheckoutBook(Username, ISBN):
     r.sadd(Username + ":checkedout", ISBN)
     r.hincrby(Username, "CheckedOut", 1)
     r.sadd(ISBN + ":checkedout", Username)
+    r.hincrby(ISBN, "CheckedOut", 1)
     return "book borrowed"
 
 def backReturnBook(Username, ISBN):
+    if(r.exists(Username) == 0): return "User does not exist"
+    if(r.sismember(Username + ":checkedout", ISBN) == 0): return "Cannot return book that is not checked out."
     r.srem(Username + ":checkedout", ISBN)
     r.hincrby(Username, "CheckedOut", -1)
     r.srem(ISBN + ":checkedout", Username)
+    r.hincrby(ISBN, "CheckedOut", -1)
     return "book restored"
 
 def backGetCheckedOutBooks(Username, sortby):
@@ -162,3 +164,9 @@ def backSearchName(Name):
     for user in unames:
         listinfo.append(backSearchUname(user))
     return listinfo
+
+def backCheckBook(ISBN):
+    if(r.exists(ISBN) == 0): return False
+    cap = r.hget(ISBN, "Copies")
+    out = r.hget(ISBN, "CheckedOut")
+    return cap > out

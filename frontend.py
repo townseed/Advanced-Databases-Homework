@@ -1,8 +1,8 @@
 from redisbackend import *
 import sys
 
-def addBook(Title, Author, ISBN, Pages):
-    print(backAddBook(Title, Author, ISBN, int(Pages)))
+def addBook(Title, Author, ISBN, Pages, copies):
+    print(backAddBook(Title, Author, ISBN, int(Pages), copies))
 
 def deleteBook(ISBN):
     print(backDeleteBook(ISBN))
@@ -47,7 +47,10 @@ def editPhone(Username, newPhone):
     print(backEditPhone(Username, int(newPhone)))
 
 def checkoutBook(Username, ISBN):
-    print(backCheckoutBook(Username, ISBN))
+    if(backCheckBook(ISBN)):
+        print(backCheckoutBook(Username, ISBN))
+    else: 
+        print("Book is not available.")
 
 def returnBook(Username, ISBN):
     print(backReturnBook(Username, ISBN))
@@ -71,7 +74,7 @@ while(1):
         parsedCommand = command.split()
         # print("executing command: " + str(parsedCommand))
         if(parsedCommand[0].lower() == "addbook"):
-            addBook(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4])
+            addBook(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4], parsedCommand[5])
         elif(parsedCommand[0].lower() == "deletebook" or parsedCommand[0].lower() == "removebook"):
             deleteBook(parsedCommand[1])
         elif(parsedCommand[0].lower() == "edittitle"):
