@@ -20,6 +20,7 @@ def backAddBook(Title, Author, ISBN, Pages, copies):
     return "book added"
     
 def backAddAuthor(ISBN, Author):
+    if(r.exists(Username) == 0): return "User does not exist"
     r.sadd(Author, ISBN)
     r.hset(ISBN, "Author", r.hget(ISBN, "Author") + ";" + Author)
     
@@ -33,18 +34,21 @@ def backDeleteBook(ISBN):
     return "removed"
 
 def backEditTitle(ISBN, newTitle):
+    if(r.exists(ISBN) == 0): return "Book does not exist"
     r.srem(r.hget(ISBN, "Title"), ISBN)
     r.hset(ISBN, "Title", newTitle)
     r.sadd(Title, ISBN)
     return "title edited"
 
 def backEditAuthor(ISBN, newAuthor):
+    if(r.exists(ISBN) == 0): return "Book does not exist"
     r.srem(r.hget(ISBN, "Author"), ISBN)
     r.hset(ISBN, "Author", newAuthor)
     r.sadd(Author, ISBN)
     return "edited author"
 
 def backEditISBN(oldISBN, newISBN):
+    if(r.exists(oldISBN) == 0): return "Book does not exist"
     r.srem(r.hget(oldISBN, "Title"), oldISBN)
     r.srem(r.hget(oldISBN, "Author"), oldISBN)
     r.sadd(r.hget(oldISBN, "Title"), newISBN)
@@ -59,6 +63,7 @@ def backEditISBN(oldISBN, newISBN):
     return "updated ISBN"
 
 def backEditPages(ISBN, newPageCount):
+    if(r.exists(ISBN) == 0): return "Book does not exist"
     r.hset(ISBN, "Pages", newPageCount)
     return "updated pagecount"
 
@@ -102,12 +107,14 @@ def backDeleteBorrower(Username):
     return "borrower deleted"
 
 def backEditName(Username, newName):
+    if(r.exists(Username) == 0): return "User does not exist"
     r.srem(r.hget(Username, "Name"), Username)
     r.sadd(newName, Username)
     r.hset(Username, "Name", newName)
     return "name changed"
 
 def backEditUsername(oldUsername, newUsername):
+    if(r.exists(oldUsername) == 0): return "User does not exist"
     r.srem(r.hget(oldUsername, "Name"), oldUsername)
     r.sadd(r.hget(oldUsername, "Name"), newUsername)
     r.hset(oldUsername, "Username", newUsername)
@@ -120,10 +127,14 @@ def backEditUsername(oldUsername, newUsername):
     return "username changed"
 
 def backEditPhone(Username, newPhone):
+    if(r.exists(Username) == 0): return "User does not exist"
     r.hset(Username, "Phone", newPhone)
     return "phone changed"
 
 def backCheckoutBook(Username, ISBN):
+    if(r.exists(Username) == 0): return "User does not exist"
+    if(r.exists(ISBN) == 0): return "Book does not exist"
+    if(r.sismember(Username + ":checkedout", ISBN) == 1): return "This user already has a copy"
     r.sadd(Username + ":checkedout", ISBN)
     r.hincrby(Username, "CheckedOut", 1)
     r.sadd(ISBN + ":checkedout", Username)
@@ -132,6 +143,7 @@ def backCheckoutBook(Username, ISBN):
 
 def backReturnBook(Username, ISBN):
     if(r.exists(Username) == 0): return "User does not exist"
+    if(r.exists(ISBN) == 0): return "Book does not exist"
     if(r.sismember(Username + ":checkedout", ISBN) == 0): return "Cannot return book that is not checked out."
     r.srem(Username + ":checkedout", ISBN)
     r.hincrby(Username, "CheckedOut", -1)
@@ -140,6 +152,7 @@ def backReturnBook(Username, ISBN):
     return "book restored"
 
 def backGetCheckedOutBooks(Username, sortby):
+    if(r.exists(Username) == 0): return "User does not exist"
     isbns = r.smembers(Username + ":checkedout")
     listofinfo = []
     for title in isbns:
@@ -152,6 +165,7 @@ def backGetCheckedOutBooks(Username, sortby):
     return listofinfo
 
 def backGetUsersBorrowing(ISBN):
+    if(r.exists(ISBN) == 0): return "Book does not exist"
     unames = r.smembers(ISBN + ":checkedout")
     listinfo = []
     for user in unames:
