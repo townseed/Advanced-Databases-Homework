@@ -1,4 +1,4 @@
-from redisbackend import *
+from mongobackend import *
 import sys
 
 def addBook(Title, Author, ISBN, Pages, copies):
@@ -10,8 +10,8 @@ def deleteBook(ISBN):
 def editTitle(ISBN, newTitle):
     print(backEditTitle(ISBN, newTitle))
 
-def editAuthor(ISBN, newAuthor):
-    print(backEditAuthor(ISBN, newAuthor))
+def editAuthor(ISBN, oldAuthor, newAuthor):
+    print(backEditAuthor(ISBN, oldAuthor, newAuthor))
 
 def addAuthor(ISBN, newAuthor):
     print(backAddAuthor(ISBN, newAuthor))
@@ -47,10 +47,10 @@ def editPhone(Username, newPhone):
     print(backEditPhone(Username, int(newPhone)))
 
 def checkoutBook(Username, ISBN):
-    if(backCheckBook(ISBN)):
+    # if(backCheckBook(ISBN)):
         print(backCheckoutBook(Username, ISBN))
-    else: 
-        print("Book is not available.")
+    # else:
+        # print("Book is not available.")
 
 def returnBook(Username, ISBN):
     print(backReturnBook(Username, ISBN))
@@ -80,7 +80,7 @@ while(1):
         elif(parsedCommand[0].lower() == "edittitle"):
             editTitle(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editauthor"):
-            editAuthor(parsedCommand[1], parsedCommand[2])
+            editAuthor(parsedCommand[1], parsedCommand[2], parsedCommand[3])
         elif(parsedCommand[0].lower() == "addauthor"):
             addAuthor(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "editisbn"):
@@ -127,4 +127,6 @@ while(1):
             searchByName(parsedCommand[1])
         elif(parsedCommand[0].lower() == "getusersborrowing"):
             getUsersBorrowing(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "test"):
+            test()
         else: print("Unrecognized command")
