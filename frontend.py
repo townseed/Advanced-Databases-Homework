@@ -47,10 +47,7 @@ def editPhone(Username, newPhone):
     print(backEditPhone(Username, int(newPhone)))
 
 def checkoutBook(Username, ISBN):
-    # if(backCheckBook(ISBN)):
-        print(backCheckoutBook(Username, ISBN))
-    # else:
-        # print("Book is not available.")
+    print(backCheckoutBook(Username, ISBN))
 
 def returnBook(Username, ISBN):
     print(backReturnBook(Username, ISBN))
@@ -66,6 +63,24 @@ def searchByName(Name):
 
 def getUsersBorrowing(ISBN):
     print(backGetUsersBorrowing(ISBN))
+
+def setCopies(ISBN, newCopies):
+    print(ISBN, newCopies)
+
+def removeTitle(ISBN):
+    print(backRemoveTitle(ISBN))
+
+def removePages(ISBN):
+    print(backRemovePages(ISBN))
+
+def removeAuthors(ISBN):
+    print(backRemoveAuthors(ISBN))
+
+def removeName(Username):
+    print(backRemoveName(Username))
+
+def removePhone(Username):
+    print(backRemovePhone(Username))
 
 
 while(1):
@@ -127,6 +142,22 @@ while(1):
             searchByName(parsedCommand[1])
         elif(parsedCommand[0].lower() == "getusersborrowing"):
             getUsersBorrowing(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "removeauthors" or parsedCommand[0].lower() == "removeauthor" or parsedCommand[0].lower() == "deauthor"):
+            removeAuthors(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "removetitle" or parsedCommand[0].lower() == "detitle"):
+            removeTitle(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "removepages" or parsedCommand[0].lower() == "depage"):
+            removePages(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "removename" or parsedCommand[0].lower() == "unname"):
+            removeName(parsedCommand[1])
+        elif(parsedCommand[0].lower() == "removephone" or parsedCommand[0].lower() == "dephone"):
+            removePhone(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "setCopies" or parsedCommand[0].lower() == "editcopies"):
+            setCopies(parsedCommand[1], parsedCommand[2])
         elif(parsedCommand[0].lower() == "test"):
             test()
         else: print("Unrecognized command")

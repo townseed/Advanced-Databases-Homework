@@ -14,13 +14,14 @@ def backSearchUname(Username):
     return r.hgetall(Username)
 
 def backAddBook(Title, Author, ISBN, Pages, copies):
+    if(r.exists(ISBN) != 0): return "ISBN is already in system."
     r.hset(ISBN, mapping={"Title": Title, "Author": Author, "Pages": Pages, "ISBN" : ISBN, "Copies": copies, "CheckedOut": 0})
     r.sadd(Title, ISBN)
     r.sadd(Author, ISBN)
     return "book added"
     
 def backAddAuthor(ISBN, Author):
-    if(r.exists(Username) == 0): return "User does not exist"
+    if(r.exists(ISBN) == 0): return "Book does not exist"
     r.sadd(Author, ISBN)
     r.hset(ISBN, "Author", r.hget(ISBN, "Author") + ";" + Author)
     
@@ -95,6 +96,7 @@ def backSearchByISBN(ISBN, sortby):
     return r.hgetall(ISBN)
     
 def backAddBorrower(Name, Username, Phone):
+    if(r.exists(Username) != 0): return "Username taken, try again"
     r.hset(Username, mapping = {"Name": Name,"Username": Username, "Phone": Phone, "CheckedOut": 0})
     r.sadd(Name, Username)
     return "borrower added"
@@ -135,6 +137,7 @@ def backCheckoutBook(Username, ISBN):
     if(r.exists(Username) == 0): return "User does not exist"
     if(r.exists(ISBN) == 0): return "Book does not exist"
     if(r.sismember(Username + ":checkedout", ISBN) == 1): return "This user already has a copy"
+    if(backCheckoutBook(ISBN) == False): "Not enough copies in library."
     r.sadd(Username + ":checkedout", ISBN)
     r.hincrby(Username, "CheckedOut", 1)
     r.sadd(ISBN + ":checkedout", Username)
@@ -179,6 +182,12 @@ def backSearchName(Name):
         listinfo.append(backSearchUname(user))
     return listinfo
 
+def backSetCopies(ISBN, newCopies):
+    if(r.exists(ISBN) == 0): return "Book does not exist"
+    if(r.hget(ISBN, "CheckedOut") > newCopies): return "Cannot reduce the copies to less than are currently being borrowed."
+    r.hset(ISBN, "Copies", newCopies)
+    return "Copies updated"
+    
 def backCheckBook(ISBN):
     if(r.exists(ISBN) == 0): return False
     cap = r.hget(ISBN, "Copies")
