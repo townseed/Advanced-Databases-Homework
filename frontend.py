@@ -65,7 +65,7 @@ def getUsersBorrowing(ISBN):
     print(backGetUsersBorrowing(ISBN))
 
 def setCopies(ISBN, newCopies):
-    print(ISBN, newCopies)
+    print(backSetCopies(ISBN, newCopies))
 
 def removeTitle(ISBN):
     print(backRemoveTitle(ISBN))
@@ -81,6 +81,18 @@ def removeName(Username):
 
 def removePhone(Username):
     print(backRemovePhone(Username))
+
+def addReview(Username, ISBN, stars, content = ""):
+    print(backAddReview(Username, ISBN, stars, content))
+
+def getRec(Username):
+    print(backGetRec(Username))
+
+def getAllBooks(sortby = "ISBN"):
+    print(backGetAllBooks(sortby))
+
+def exit():
+    backExit()
 
 
 while(1):
@@ -135,6 +147,7 @@ while(1):
                 getCheckedOutBooks(parsedCommand[1], parsedCommand[2])
             else: getCheckedOutBooks(parsedCommand[1])
         elif(parsedCommand[0].lower() == "exit" or parsedCommand[0].lower() == "quit"):
+            exit()
             break
         elif(parsedCommand[0].lower() == "getuser" or parsedCommand[0] == "getuserbyusername" or parsedCommand[0] == "searchbyusername"):
             searchByUsername(parsedCommand[1])
