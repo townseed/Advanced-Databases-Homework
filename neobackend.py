@@ -51,14 +51,29 @@ def backEditPages(ISBN, newPageCount):
     return "pages updated"
 
 def backSearchByTitle(Title, sortby = "Author"):
-    
+    res = ""
+    if(sortby == "author" or sortby == "Author"):
+        res = n.run("match (b:Book {title: $Title})<-[:wrote]-(a:Author) return b order by a.Name", Title)
+    else:
+        res = n.run("match (b:Book {title: $Title}) return b order by a.$sortBy", Title, sortBy)
+    return res
 
 def backSearchByAuthor(Author, sortby = "Author"):
-
-
+    res = ""
+    if(sortby == "author" or sortby == "Author"):
+        res = n.run("match (b:Book)<-[:wrote]-(a:Author {Name: $name}) return b order by a.Name", Author)
+    else:
+        res = n.run("match (b:Book)<-[:wrote]-(a:Author {Name: $name}) return b order by b.$sortby", Author, sortby)
+    return res
+        
 def backSearchByISBN(ISBN, sortby = "Author"):
-
-
+    res = ""
+    if(sortby == "author" or sortby == "Author"):
+        res = n.run("match (b:Book {ISBN: $ISBN})<-[:wrote]-(a:Author) return b order by a.Name", ISBN)
+    else:
+        res = n.run("match (b:Book {ISBN: $ISBN})<-[:wrote]-(a:Author) return b order by b.$sortby", ISBN, sortby)
+    return res
+ 
 def backAddBorrower(Name, Username, Phone = "0000000000"):
     
 
