@@ -109,23 +109,23 @@ def backCheckoutBook(Username, ISBN):
     return "book checked out"
 
 def backReturnBook(Username, ISBN):
-    if not n.run("match (u:User {Username: $Username})-[r:checkedOut]->(b:Book {ISBN: $ISBN}) delete r return b",Username , ISBN): return "book or user does not exist"
+    if not n.run("match (u:User where Username = $Username)-[r:checkedOut]->(b:Book {ISBN: $ISBN}) delete r return b",Username , ISBN): return "book or user does not exist"
     return "book returned"
 
 def backGetCheckedOutBooks(Username, sortby):
-    if(n.run("match (u:User {Username: $Username}) return count(u) as existing)", Username).single()["existing"] == 0): return "User does not exist"
+    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
     if(sortby == "Author" or sortby == "author"): return n.run()
     return n.run("match (u:User {Username: $Username})-[:checkedOut]->(b:Book) return b orderby b.$sortby", Username, sortby)
 
 def backSearchByUsername(Username):
-    return n.run("match (u:User {Username: $Username})")
+    return n.run("match (u:User where Username = $Username})", Username)
 
 def backSearchName(Name):
     return n.run("match (u:User {Name: $Name}) return u", Name)
 
 def backGetUsersBorrowing(ISBN):
     if not n.run("match (b:Book {ISBN: $ISBN}) return b", ISBN): return "Book does not exist"
-    return n.run("match (b:Book {ISBN: $ISBN})<-[:checkedOut]-(u:User) return u")
+    return n.run("match (b:Book {ISBN: $ISBN})<-[:checkedOut]-(u:User) return u", ISBN)
 
 def backSetCopies(ISBN, newCopies):
     if(n.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing)", ISBN).single()["existing"] == 0): return "book does not exist"
@@ -142,9 +142,25 @@ def backGetAllBooks(sortby):
     return search
     
 def backGetRec(Username):
-
+    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
+    #1: get books you liked
+    #2: get other users who also liked them
+    #3: get other books they liked
+    return n.run("match (a:User {Username: $Username})-[r:reviewed where r.Stars => 3}]-(b:Book) with b match (b)-[r:reviewed where r.Stars => 3]-(u:User where Username != $Username) with u match (u)-[r:reviewed where r.Stars => 3]-(f:Book) return f", Username, Username)
+    
 
 def backAddReview(Username, ISBN, stars, content):
-    if(n.run("match (u:User {Username: $Username}) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
+    if not 0 <= stars <= 5: return "unreasonable star rating"
+    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
     if(n.run("match (b:Book {ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "Book does not exist"
     if(n.run("match (u:User {Username: $Username})-[:reviewed] return count(u) as existing", Username).single()["existing"] != 0): return "Username taken"
+    n.run("create (u:User {Username: $Username})-[:reviewed {Stars: $stars, Content: $Content}]->(:Book {ISBN: $ISBN})", Username, stars, content, ISBN)
+    return "book reviewed"
+
+def backGetUserReviews(Username):
+    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
+    return n.run("match (:User {Username: $Username})-[r:reviewed]-(b:Book) return r")
+
+def backGetBookReviews(ISBN):
+    if(n.run("match (b:Book {ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "Book does not exist"
+    return n.run("match (b:Book {ISBN: $ISBN})-[r:reviewed]-(u:User) return r")
