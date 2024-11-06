@@ -13,18 +13,22 @@ def backExit():
     #     print(record[0]['born'], record[0]['name'], record[0], record[1])
     # session.close()
 
-def initSystem():
-    n.run("CREATE CONSTRAINT ON (b:Book) ASSERT b.ISBN IS UNIQUE") 
-    n.run("CREATE CONSTRAINT ON (u:User) ASSERT u.Username IS UNIQUE")
+def test():
+    ISBN = 1
+    print(n.run("match (b:Book where b.ISBN = $ISBN) with count(b) > 0 as existing return existing", ISBN = ISBN))
 
-def backAddBook(Title, Author, ISBN, Pages, copies):
-    if(n.run("match (b:Book {ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] != 0): return "ISBN already exists"
-    n.run("CREATE (b:Book {Title: $title, ISBN: $ISBN, Pages: $pages, Copies: $copies}) with b merge (a:Author {Name: $Author}, create (a)-[:wrote]->(b)) return b",
-            Title, ISBN, Pages, copies, Author)
+def initSystem():
+    n.run("CREATE CONSTRAINT for (b:Book) require b.ISBN IS UNIQUE") 
+    n.run("CREATE CONSTRAINT for (u:User) require u.Username IS UNIQUE")
+
+def backAddBook(Title, Author, ISBN, Pages, Copies):
+    if(n.run("match (b:Book where b.ISBN = $ISBN) with count(b) > 0 as existing return existing", ISBN = ISBN).single() is None): return "ISBN already exists"
+    n.run("CREATE (b:Book {Title: $Title, ISBN: $ISBN, Pages: $Pages, Copies: $Copies}) with b merge (a:Author {Name: $Author}) create (a)-[:wrote]->(b) return b",
+            Title = Title, ISBN = ISBN, Pages = Pages, Copies = Copies, Author = Author)
     return "book created"
     
 def backDeleteBook(ISBN):
-    if(n.run("match (b:Book {ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "book does not exist"
+    if(n.run("match (b:Book where ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "book does not exist"
     if(n.run("match (u:User)-[:checkedOut]->(b:Book {ISBN: $ISBN}) return count(u) as usersHave", ISBN).single()["usersHave"] != 0): return "return all copies before deleting the book!"
     n.run("match (b:Book {ISBN: $ISBN}) detach delete b return b")
     return "book deleted"
@@ -85,7 +89,7 @@ def backAddBorrower(Name, Username, Phone):
 
 def backDeleteBorrower(Username):
     if(n.run("match (u:User {Username: $Username} return count(u) as existing)", Username).single()["existing"] == 0): return "User does not exist"
-    if not n.run("match (u:User {Username: $Username})-[r:checkedOut]->(:Book) return count(r) as existing", Username).single()["existing"] != 0): return "return all books before removing users!"
+    if not n.run("match (u:User {Username: $Username})-[r:checkedOut]->(:Book) return count(r) as existing", Username).single()["existing"] != 0: return "return all books before removing users!"
     n.run("match (u:User {Username: $Username}) detach delete u return u")
     return "user removed"
 
@@ -136,10 +140,14 @@ def backSetCopies(ISBN, newCopies):
 def backGetAllBooks(sortby):
     search = ""
     if(sortby == "Author"): 
-        search = n.run("match (b:Book)<-[:wrote]-(a:Author) return b order by a.name")
+        search = n.run("match (b:Book)-[:wrote]-(a:Author) return b, a order by a.name")
     else:
-        search = n.run("match (b:Book) return b order by b.$sortby", sortby)
-    return search
+        search = n.run("match (b:Book)-[:wrote]-(a:Author) return b, a order by b." + sortby)
+    books = []
+    for book in search: 
+        books.append(dict(book["b"]) | {"author": dict(book["a"])})
+        
+    return books
     
 def backGetRec(Username):
     if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"

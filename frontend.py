@@ -1,4 +1,4 @@
-from mongobackend import *
+from neobackend import *
 import sys
 
 def addBook(Title, Author, ISBN, Pages, copies):
@@ -91,6 +91,22 @@ def getRec(Username):
 def getAllBooks(sortby = "ISBN"):
     print(backGetAllBooks(sortby))
 
+def startSystem():
+    initSystem()
+    print("constraints created")
+
+def removeAuthor(ISBN, Author):
+    print(backRemoveAuthor(ISBN, Author))
+
+def getRec(Username):
+    print(backGetRec(Username))
+
+def getUserReviews(Username):
+    print(backGetUserReviews(Username))
+
+def getBookReviews(ISBN):
+    print(backGetBookReviews(ISBN))
+
 def exit():
     backExit()
 
@@ -168,6 +184,27 @@ while(1):
             removeName(parsedCommand[1])
         elif(parsedCommand[0].lower() == "removephone" or parsedCommand[0].lower() == "dephone"):
             removePhone(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "addreview"):
+            addReview(parsedCommand[1], parsedCommand[2], parsedCommand[3], parsedCommand[4])
+
+        elif(parsedCommand[0].lower() == "start"):
+            startSystem()
+
+        elif(parsedCommand[0].lower() == "removeauthor"):
+            removeAuthor(parsedCommand[1], parsedCommand[2])
+
+        elif(parsedCommand[0].lower() == "getallbooks" or parsedCommand[0].lower() == "allbooks"):
+            getAllBooks()
+
+        elif(parsedCommand[0].lower() == "userreviews"):
+            getUserReviews(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "getbookreviews"):
+            getBookReviews(parsedCommand[1])
+
+        elif(parsedCommand[0].lower() == "getrec"):
+            getRec(Username)
 
         elif(parsedCommand[0].lower() == "setCopies" or parsedCommand[0].lower() == "editcopies"):
             setCopies(parsedCommand[1], parsedCommand[2])
