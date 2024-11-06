@@ -22,15 +22,15 @@ def initSystem():
     n.run("CREATE CONSTRAINT for (u:User) require u.Username IS UNIQUE")
 
 def backAddBook(Title, Author, ISBN, Pages, Copies):
-    if(n.run("match (b:Book where b.ISBN = $ISBN) with count(b) > 0 as existing return existing", ISBN = ISBN).single() is None): return "ISBN already exists"
+    if(n.run("match (b:Book {ISBN: $ISBN}) with count(b) > 0 as existing return existing", ISBN = ISBN).single() is not None): return "ISBN already exists"
     n.run("CREATE (b:Book {Title: $Title, ISBN: $ISBN, Pages: $Pages, Copies: $Copies}) with b merge (a:Author {Name: $Author}) create (a)-[:wrote]->(b) return b",
             Title = Title, ISBN = ISBN, Pages = Pages, Copies = Copies, Author = Author)
     return "book created"
     
 def backDeleteBook(ISBN):
-    if(n.run("match (b:Book where ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "book does not exist"
-    if(n.run("match (u:User)-[:checkedOut]->(b:Book {ISBN: $ISBN}) return count(u) as usersHave", ISBN).single()["usersHave"] != 0): return "return all copies before deleting the book!"
-    n.run("match (b:Book {ISBN: $ISBN}) detach delete b return b")
+    if(n.run("match (b:Book {ISBN: $ISBN}) with count(b) > 0 as existing return existing", ISBN = ISBN).single() is None): return "book does not exist"
+    if(n.run("match (u:User)-[r:checkedOut]->(b:Book {ISBN: $ISBN}) return count(r) > 0 as usersHave", ISBN = ISBN).single() is not None): return "return all copies before deleting the book!"
+    n.run("match (b:Book {ISBN: $ISBN}) detach delete b return b", ISBN = ISBN)
     return "book deleted"
 
 def backEditTitle(ISBN, newTitle):
@@ -61,26 +61,35 @@ def backEditPages(ISBN, newPageCount):
 def backSearchByTitle(Title, sortby = "Author"):
     res = ""
     if(sortby == "author" or sortby == "Author"):
-        res = n.run("match (b:Book {Title: $Title})<-[:wrote]-(a:Author) return b order by a.Name", Title)
+        res = n.run("match (b:Book {Title: $Title})<-[:wrote]-(a:Author) return b, a order by a.Name", Title = Title)
     else:
-        res = n.run("match (b:Book {Title: $Title}) return b order by b.$sortBy", Title, sortBy)
-    return res
+        res = n.run("match (b:Book {Title: $Title})-[:wrote]-(a:Author) return b, a order by b."+sortby, Title = Title)
+    books = []
+    for book in res: 
+        books.append(dict(book["b"]) | {"author": dict(book["a"])})
+    return books
 
 def backSearchByAuthor(Author, sortby = "Author"):
     res = ""
     if(sortby == "author" or sortby == "Author"):
-        res = n.run("match (b:Book)<-[:wrote]-(a:Author {Name: $name}) return b order by a.Name", Author)
+        res = n.run("match (b:Book)-[:wrote]-(a:Author where a.Name = $name) return b, a order by a.Name", name = Author)
     else:
-        res = n.run("match (b:Book)<-[:wrote]-(a:Author {Name: $name}) return b order by b.$sortby", Author, sortby)
-    return res
+        res = n.run("match (b:Book)<-[:wrote]-(a:Author {Name: $name}) return b, a order by b."+sortby, name = Author)
+    books = []
+    for book in res: 
+        books.append(dict(book["b"]) | {"author": dict(book["a"])})
+    return books
         
 def backSearchByISBN(ISBN, sortby = "Author"):
     res = ""
     if(sortby == "author" or sortby == "Author"):
-        res = n.run("match (b:Book {ISBN: $ISBN})<-[:wrote]-(a:Author) return b order by a.Name", ISBN)
+        res = n.run("match (b:Book {ISBN: $ISBN})-[:wrote]-(a:Author) return b, a order by a.Name", ISBN = ISBN)
     else:
-        res = n.run("match (b:Book {ISBN: $ISBN})<-[:wrote]-(a:Author) return b order by b.$sortby", ISBN, sortby)
-    return res
+        res = n.run("match (b:Book {ISBN: $ISBN})-[:wrote]-(a:Author) return b, a order by b.$sortby", ISBN = ISBN, sortby = sortby)
+    books = []
+    for book in res: 
+        books.append(dict(book["b"]) | {"author": dict(book["a"])})
+    return books
  
 def backAddBorrower(Name, Username, Phone):
     if(n.run("match (u:User {Username: $Username} return count(u) as existing)", Username).single()["existing"] != 0): return "Username taken"
@@ -146,7 +155,6 @@ def backGetAllBooks(sortby):
     books = []
     for book in search: 
         books.append(dict(book["b"]) | {"author": dict(book["a"])})
-        
     return books
     
 def backGetRec(Username):
