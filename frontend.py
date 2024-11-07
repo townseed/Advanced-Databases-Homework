@@ -107,6 +107,9 @@ def getUserReviews(Username):
 def getBookReviews(ISBN):
     print(backGetBookReviews(ISBN))
 
+def getUsers():
+    print(backGetUsers())
+
 def exit():
     backExit()
 
@@ -122,6 +125,8 @@ while(1):
             deleteBook(parsedCommand[1])
         elif(parsedCommand[0].lower() == "edittitle"):
             editTitle(parsedCommand[1], parsedCommand[2])
+        elif(parsedCommand[0].lower() == "getusers"):
+            getUsers() 
         elif(parsedCommand[0].lower() == "editauthor"):
             editAuthor(parsedCommand[1], parsedCommand[2], parsedCommand[3])
         elif(parsedCommand[0].lower() == "addauthor"):
@@ -172,7 +177,7 @@ while(1):
         elif(parsedCommand[0].lower() == "getusersborrowing"):
             getUsersBorrowing(parsedCommand[1])
 
-        elif(parsedCommand[0].lower() == "removeauthors" or parsedCommand[0].lower() == "removeauthor" or parsedCommand[0].lower() == "deauthor"):
+        elif(parsedCommand[0].lower() == "removeauthors" or parsedCommand[0].lower() == "deauthor"):
             removeAuthors(parsedCommand[1])
 
         elif(parsedCommand[0].lower() == "removetitle" or parsedCommand[0].lower() == "detitle"):
@@ -204,7 +209,7 @@ while(1):
             getBookReviews(parsedCommand[1])
 
         elif(parsedCommand[0].lower() == "getrec"):
-            getRec(Username)
+            getRec(parsedCommand[1])
 
         elif(parsedCommand[0].lower() == "setCopies" or parsedCommand[0].lower() == "editcopies"):
             setCopies(parsedCommand[1], parsedCommand[2])

@@ -39,38 +39,38 @@ def backDeleteBook(ISBN):
 
 def backEditTitle(ISBN, newTitle):
     with driver.session() as neo:
-        if not neo.run("match (b:Book {ISBN: $ISBN}) set b.Title = $newTitle return b", ISBN, newTitle): return "book does not exist"
+        if not neo.run("match (b:Book {ISBN: $ISBN}) set b.Title = $newTitle return b", ISBN = ISBN, newTitle = newTitle): return "book does not exist"
         neo.close()
         return "updated title"
 
 def backEditAuthor(ISBN, oldAuthor, newAuthor):
     with driver.session() as neo:
-        if not neo.run("match (a:Author {Name: $oldAuthor})-[r:wrote]->(b:Book {ISBN: $ISBN}) delete r return b",oldAuthor, ISBN): return "book does not exist"
-        neo.run("match (b:Book {ISBN: $ISBN}) with b merge (a:Author {Name: $newAuthor}, create (a)-[:wrote]->(b)) return b", ISBN, newAuthor)
+        if not neo.run("match (a:Author {Name: $oldAuthor})-[r:wrote]->(b:Book {ISBN: $ISBN}) delete r return b",oldAuthor = oldAuthor, ISBN = ISBN): return "book does not exist"
+        neo.run("match (b:Book {ISBN: $ISBN}) with b merge (a:Author {Name: $newAuthor}) create (a)-[:wrote]->(b) return b", ISBN = ISBN, newAuthor = newAuthor)
         neo.close()
         return "edited author"
 
 def backRemoveAuthor(ISBN, Author):
     with driver.session() as neo:
-        if not neo.run("match (a:Author {Name: $Author})-[r:wrote]->(b:Book {ISBN: $ISBN}) delete r return b",Author, ISBN): return "book does not exist"
+        if not neo.run("match (a:Author {Name: $Author})-[r:wrote]->(b:Book {ISBN: $ISBN}) delete r return b",Author = Author, ISBN = ISBN): return "book does not exist"
         neo.close()
         return "removed author"
 
 def backAddAuthor(ISBN, newAuthor):
     with driver.session() as neo:
-        if not neo.run("match (b:Book {ISBN: $ISBN}) with b merge (a:Author {Name: $newAuthor}, create (a)-[:wrote]->(b)) return b", ISBN, newAuthor): return "book does not exist"
+        if not neo.run("match (b:Book {ISBN: $ISBN}) with b merge (a:Author {Name: $newAuthor}) create (a)-[:wrote]->(b) return b", ISBN = ISBN, newAuthor = newAuthor): return "book does not exist"
         neo.close()
         return "added author"
     
 def backEditISBN(oldISBN, newISBN):
     with driver.session() as neo:
-        if not neo.run("match (b:Book {ISBN: $ISBN}) set b.ISBN = $newISBN return b", oldISBN, newISBN): return "book does not exist"
+        if not neo.run("match (b:Book {ISBN: $oldISBN}) set b.ISBN = $newISBN return b", oldISBN = oldISBN, newISBN = newISBN): return "book does not exist"
         neo.close()
         return "Edited ISBN"
 
 def backEditPages(ISBN, newPageCount):
     with driver.session() as neo:
-        if not neo.run("match (b:Book {ISBN: $ISBN}) set b.Pages = $newPageCount return b", ISBN, newPageCount): return "book does not exist"
+        if not neo.run("match (b:Book {ISBN: '" + str(ISBN) +"'}) set b.Pages = $newPageCount return b", newPageCount = newPageCount): return "book does not exist"
         neo.close()
         return "pages updated"
 
@@ -109,72 +109,104 @@ def backSearchByISBN(ISBN, sortby = "Author"):
  
 def backAddBorrower(Name, Username, Phone):
     with driver.session() as neo:
-        if(neo.run("match (u:User {Username: $Username} return count(u) as existing)", Username).single()["existing"] != 0): return "Username taken"
-        neo.run("CREATE (u:User {Username: $Username, Name: $Name, Phone: $phone}) return u")
+        if(neo.run("match (u:User {Username: $Username}) return count(u) as existing", Username = Username).single()["existing"] != 0): return "Username taken"
+        neo.run("CREATE (u:User {Username: $Username, Name: $Name, Phone: $Phone}) return u", Username = Username, Name = Name, Phone = Phone)
         neo.close()
         return "User created"
 
 def backDeleteBorrower(Username):
     with driver.session() as neo:
-        if(neo.run("match (u:User {Username: $Username} return count(u) as existing)", Username = Username).single()["existing"] == 0): return "User does not exist"
-        if not neo.run("match (u:User {Username: $Username})-[r:checkedOut]->(:Book) return count(r) as existing", Username).single()["existing"] != 0: return "return all books before removing users!"
-        neo.run("match (u:User {Username: $Username}) detach delete u return u", Username = Username)
+        if(neo.run("match (u:User {Username: $Username}) return count(u) as existing", Username = Username).single()["existing"] == 0): return "User does not exist"
+        booksrelated = neo.run("match (u:User {Username: $Username})-[r]-(:Book) return distinct type(r) as relations", Username = Username)
+        for relation in booksrelated:
+            if relations["r"] == "checkedOut": return "check out all books before deleting users!"
+        
+        neo.run("match (u:User {Username: $Username}) detach delete u", Username = Username)
         neo.close()
         return "user removed"
 
 def backEditName(Username, newName):
     with driver.session() as neo:
-        if not neo.run("match (u:User {Username: $Username}) set u.Name = $newName return u", Username, newName): return "user does not exist"
+        if not neo.run("match (u:User {Username: $Username}) set u.Name = $newName return u", Username = Username, newName = newName): return "user does not exist"
         neo.close()
         return "name changed"
 
 def backEditUsername(oldUsername, newUsername):
     with driver.session() as neo:
-        if not neo.run("match (u:User {Username: $oldUsername}) set u.Username = $newUsername return u", oldUsername, newUsername): return "user does not exist"
+        if not neo.run("match (u:User {Username: $oldUsername}) set u.Username = $newUsername return u", oldUsername = oldUsername, newUsername = newUsername): return "user does not exist"
         neo.close()
         return "Username changed"
 
 def backEditPhone(Username, newPhone):
     with driver.session() as neo:
-        if not neo.run("match (u:User {Username: $Username}) set u.Phone = $newPhone return u", Username, newPhone): return "user does not exist"
+        if not neo.run("match (u:User {Username: $Username}) set u.Phone = $newPhone return u", Username = Username, newPhone = newPhone): return "user does not exist"
         neo.close()
         return "phone changed"
 
 def backCheckoutBook(Username, ISBN):
     with driver.session() as neo:
-        if(neo.run("match (u:User {Username: $Username}) return count(u) as existing)", Username).single()["existing"] == 0): return "User does not exist"
-        if(neo.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing)", ISBN).single()["existing"] == 0): return "book does not exist"
-        if(neo.run("match (u:User {Username: $Username})-[:checkedOut]->(b:Book {ISBN: $ISBN}) return count(u) as existing)", Username, ISBN).single()["existing"] != 0): return "User already has a copy"
-        neo.run("create (u:User {Username: $Username})-[:checkedOut]->(b:Book {ISBN: $ISBN})", Username, ISBN)
+        if(neo.run("match (u:User {Username: $Username}) return count(u) as existing", Username = Username).single()["existing"] == 0): return "User does not exist"
+        if(neo.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing", ISBN = ISBN).single()["existing"] == 0): return "book does not exist"
+        bookrelated = neo.run("match (u:User {Username: $Username})-[r]->(b:Book {ISBN: $ISBN}) return type(r) as relations", Username = Username, ISBN = ISBN)
+        for relation in bookrelated:
+            if relation["relations"] == "checkedOut": return "User already has that book!"
+        neo.run("match (u:User {Username: $Username}), (b:Book {ISBN: $ISBN}) create (u)-[:checkedOut]->(b)", Username = Username, ISBN = ISBN)
         neo.close()
         return "book checked out"
 
 def backReturnBook(Username, ISBN):
     with driver.session() as neo:
-        if not neo.run("match (u:User where Username = $Username)-[r:checkedOut]->(b:Book {ISBN: $ISBN}) delete r return b",Username , ISBN): return "book or user does not exist"
+        if not neo.run("match (u:User where u.Username = $Username)-[r:checkedOut]->(b:Book {ISBN: $ISBN}) delete r return b",Username = Username, ISBN = ISBN): return "book or user does not exist"
         neo.close()
         return "book returned"
 
 def backGetCheckedOutBooks(Username, sortby):
-    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
-    if(sortby == "Author" or sortby == "author"): return n.run()
-    return n.run("match (u:User {Username: $Username})-[:checkedOut]->(b:Book) return b orderby b.$sortby", Username, sortby)
-
-def backSearchByUsername(Username):
-    return n.run("match (u:User where Username = $Username})", Username)
-
+    if(n.run("match (u:User where u.Username= $Username) return count(u) as existing", Username = Username).single()["existing"] == 0): return "User does not exist"
+    result = ""
+    if(sortby == "Author" or sortby == "author"): result = n.run("match (:User {Username: $Username})-[:checkedOut]-(b:Book) with b match (b)-[:wrote]-(a) return b, a order by a.Name", Username = Username)
+    else: result = n.run("match (u:User {Username: $Username})-[:checkedOut]->(b:Book) with b match (b)-[:wrote]-(a) return b, a order by b.$sortby", Username = Username, sortby = sortby)
+    books = []
+    for book in result: 
+        books.append(dict(book["b"]) | {"author": dict(book["a"])})
+    return books
+def backSearchUname(Username):
+    search = n.run("match (u:User where u.Username = $Username) return u", Username = Username)
+    users = []
+    for user in search:
+        users.append(dict(user["u"]))
+    return users
+    
 def backSearchName(Name):
-    return n.run("match (u:User {Name: $Name}) return u", Name)
+    search = n.run("match (u:User {Name: $Name}) return u", Name = Name)
+    users = []
+    for user in search:
+        users.append(dict(user["u"]))
+    return users
+
+def backGetUsers():
+    search = n.run("match (u:User) return u")
+    users = []
+    for user in search:
+        users.append(dict(user["u"]))
+    return users
 
 def backGetUsersBorrowing(ISBN):
-    if not n.run("match (b:Book {ISBN: $ISBN}) return b", ISBN): return "Book does not exist"
-    return n.run("match (b:Book {ISBN: $ISBN})<-[:checkedOut]-(u:User) return u", ISBN)
-
+    if not n.run("match (b:Book {ISBN: $ISBN}) return b", ISBN = ISBN): return "Book does not exist"
+    search = n.run("match (b:Book {ISBN: $ISBN})<-[:checkedOut]-(u:User) return u", ISBN = ISBN)
+    users = []
+    for user in search:
+        users.append(dict(user["u"]))
+    return users
+    
 def backSetCopies(ISBN, newCopies):
     with driver.session() as neo:
-        if(neo.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing)", ISBN).single()["existing"] == 0): return "book does not exist"
-        if(neo.run("match (b:Book {ISBN: $ISBN})<-[r:checkedOut]-(:User) return count(r)") > newCopies): return "return more copies first"
-        neo.run("match (b:Book {ISBN: $ISBN}) set b.Copies = $newCopies return b", ISBN, newCopies)
+        if(neo.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing", ISBN = ISBN).single()["existing"] == 0): return "book does not exist"
+        bookrelated = neo.run("match (u:User)-[r]->(b:Book {ISBN: $ISBN}) return type(r) as relations", ISBN = ISBN)
+        checkedout = 0
+        for relation in bookrelated:
+            if relation["relations"] == "checkedOut": checkedout = checkedout + 1
+        if(checkedout > int(newCopies)): return "return more copies first"
+        neo.run("match (b:Book {ISBN: $ISBN}) set b.Copies = $newCopies return b", ISBN = ISBN, newCopies = newCopies)
         neo.close()
         return "copies updated"
 
@@ -190,27 +222,37 @@ def backGetAllBooks(sortby):
     return books
     
 def backGetRec(Username):
-    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
+    if(n.run("match (u:User where u.Username= $Username) return count(u) as existing", Username = Username).single()["existing"] == 0): return "User does not exist"
     #1: get books you liked
     #2: get other users who also liked them
     #3: get other books they liked
-    return n.run("match (a:User {Username: $Username})-[r:reviewed where r.Stars => 3}]-(b:Book) with b match (b)-[r:reviewed where r.Stars => 3]-(u:User where Username != $Username) with u match (u)-[r:reviewed where r.Stars => 3]-(f:Book) return f", Username, Username)
-    
+    search = n.run("match (:User {Username: $Username})-[r:reviewed where toInteger(r.Stars) >= 3]-(b:Book) with b match (b)-[r:reviewed where toInteger(r.Stars) >= 3]-(u:User where u.Username <> $Username) with u match (u)-[r:reviewed where toInteger(r.Stars) >= 3]-(f:Book) with f match (f)-[:wrote]-(a) return f, a", Username = Username)
+    books = []
+    for book in search: 
+        books.append(dict(book["f"]) | {"author": dict(book["a"])})
+    return books
 
-def backAddReview(Username, ISBN, stars, content):
-    if not 0 <= stars <= 5: return "unreasonable star rating"
+def backAddReview(Username, ISBN, Stars, Content):
+    if not 0 <= int(Stars) <= 5: return "unreasonable star rating"
     with driver.session() as neo:
-        if(neo.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
-        if(neo.run("match (b:Book {ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "Book does not exist"
-        if(neo.run("match (u:User {Username: $Username})-[:reviewed] return count(u) as existing", Username).single()["existing"] != 0): return "Username taken"
-        neo.run("create (u:User {Username: $Username})-[:reviewed {Stars: $stars, Content: $Content}]->(:Book {ISBN: $ISBN})", Username, stars, content, ISBN)
+        if(neo.run("match (u:User where u.Username= $Username) return count(u) as existing", Username = Username).single()["existing"] == 0): return "User does not exist"
+        if(neo.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing", ISBN = ISBN).single()["existing"] == 0): return "Book does not exist"
+        neo.run("match (u:User {Username: $Username}), (b:Book {ISBN: $ISBN}) merge (u)-[r:reviewed]->(b) set r.Stars = $Stars, r.Content = $Content", Username = Username, Stars = Stars, Content = Content, ISBN = ISBN)
         neo.close()
         return "book reviewed"
 
 def backGetUserReviews(Username):
-    if(n.run("match (u:User where Username= $Username) return count(u) as existing", Username).single()["existing"] == 0): return "User does not exist"
-    return n.run("match (:User {Username: $Username})-[r:reviewed]-(b:Book) return r")
+    if(n.run("match (u:User where u.Username = $Username) return count(u) as existing", Username = Username).single()["existing"] == 0): return "User does not exist"
+    result = n.run("match (:User {Username: $Username})-[r:reviewed]-(b:Book) return r, b", Username = Username)
+    reviews = []
+    for review in result:
+        reviews.append(dict(review["r"]) | dict(review["b"]))
+    return reviews
 
 def backGetBookReviews(ISBN):
-    if(n.run("match (b:Book {ISBN: $ISBN} return count(b) as existing)", ISBN).single()["existing"] == 0): return "Book does not exist"
-    return n.run("match (b:Book {ISBN: $ISBN})-[r:reviewed]-(u:User) return r")
+    if(n.run("match (b:Book {ISBN: $ISBN}) return count(b) as existing", ISBN = ISBN).single()["existing"] == 0): return "Book does not exist"
+    result = n.run("match (:Book {ISBN: $ISBN})-[r:reviewed]-(u:User) return r, u", ISBN = ISBN)
+    reviews = []
+    for review in result:
+        reviews.append(dict(review["r"]) | dict(review["u"]))
+    return reviews
